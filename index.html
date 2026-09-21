@@ -816,22 +816,25 @@
 
   </div>
 
-  <!-- Scripts: TradingView Engine Library (Local with CDN fallback) -->
-  <script src="js/lightweight-charts.js"></script>
+  <!-- Scripts: TradingView Engine Library (CDN + Local fallback) -->
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script>
     if (typeof LightweightCharts === 'undefined') {
-      document.write('<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"><\/script>');
+      document.write('<script src="js/lightweight-charts.js"><\/script>');
     }
   </script>
 
-  <!-- Sound Effects -->
-  <script src="js/soundEffects.js"></script>
-
-  <!-- Application Modules -->
-  <script src="js/deltaEngine.js"></script>
-  <script src="js/zoneEngine.js"></script>
-  <script src="js/chartCanvas.js"></script>
-  <script src="js/dataFeed.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Complete Standalone Application Bundle -->
+  <script src="app.bundle.js"></script>
+  <script>
+    if (typeof DataFeed === 'undefined') {
+      document.write('<script src="js/soundEffects.js"><\/script>');
+      document.write('<script src="js/deltaEngine.js"><\/script>');
+      document.write('<script src="js/zoneEngine.js"><\/script>');
+      document.write('<script src="js/chartCanvas.js"><\/script>');
+      document.write('<script src="js/dataFeed.js"><\/script>');
+      document.write('<script src="js/app.js"><\/script>');
+    }
+  </script>
 </body>
 </html>
