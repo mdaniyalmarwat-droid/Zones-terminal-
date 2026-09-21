@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEPPERSTONE:XAUUSD Zone-to-Opposite-Zone Trading Terminal</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Zones Terminal">
+  <meta name="theme-color" content="#07090e">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       PEPPERSTONE:XAUUSD ZONE-TO-OPPOSITE-ZONE TRADING TERMINAL
+       ========================================================================== */
+    :root {
+      --bg-dark: #07090e;
+      --bg-panel: #0d121c;
+      --bg-card: #131926;
+      --bg-hover: #1b2336;
+
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(0, 229, 255, 0.3);
+
+      --gold-primary: #f59e0b;
+      --gold-light: #fbbf24;
+
+      --buy-green: #10b981;
+      --buy-bg: rgba(16, 185, 129, 0.14);
+      --buy-border: rgba(16, 185, 129, 0.4);
+
+      --sell-red: #ef4444;
+      --sell-bg: rgba(239, 68, 68, 0.14);
+      --sell-border: rgba(239, 68, 68, 0.4);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .terminal-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       HEADER: PEPPERSTONE PAIR & QUOTES
+       ========================================================================== */
+    .terminal-header {
+      height: 52px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: 16px;
+      z-index: 50;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pepperstone-badge {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .pair-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    .price-box {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+    }
+
+    .current-price-val {
+      font-family: var(--font-mono);
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .price-change {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .price-change.positive { color: var(--buy-green); background: var(--buy-bg); }
+    .price-change.negative { color: var(--sell-red); background: var(--sell-bg); }
+
+    /* Live Forex Quotes */
+    .forex-quotes {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .quote-chip {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .quote-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+
+    .quote-val {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .quote-val.bid { color: var(--sell-red); }
+    .quote-val.ask { color: var(--buy-green); }
+
+    .feed-live-indicator {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--buy-green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feed-live-indicator::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--buy-green);
+      box-shadow: 0 0 6px var(--buy-green);
+    }
+
+    /* ==========================================================================
+       WORKSPACE GRID
+       ========================================================================== */
+    .main-workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      flex: 1;
+      height: calc(100vh - 52px);
+      overflow: hidden;
+    }
+
+    .chart-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    /* Controls Bar */
+    .chart-controls-bar {
+      height: 38px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+    }
+
+    .tf-selector {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tf-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tf-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .tf-btn.active { background: var(--bg-card); color: var(--gold-light); border-color: rgba(245, 158, 11, 0.3); }
+
+    /* Zone Status Banner on Toolbar */
+    .zone-status-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tv-branding-tag {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--gold-light);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .zone-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .zone-pill.demand {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--buy-green);
+    }
+
+    .zone-pill.supply {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: var(--sell-red);
+    }
+
+    .btn-small {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-small:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+    /* Viewport */
+    .chart-viewport {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #080b11;
+      overflow: hidden;
+    }
+
+    .tv-main-chart-wrapper {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: #080b11;
+      overflow: hidden;
+    }
+
+    .tv-zone-canvas-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .cvd-subchart-container {
+      position: relative;
+      height: 100px;
+      width: 100%;
+      border-top: 1px solid var(--border-subtle);
+      background: #06090e;
+    }
+
+    #cvdCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cvd-label-overlay {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       SIDEBAR: ZONE-TO-OPPOSITE-ZONE TRADE PLAN & DELTA
+       ========================================================================== */
+    .orderflow-sidebar {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--bg-panel);
+      overflow-y: auto;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    /* ZONE-TO-ZONE TRADE SETUP CARD */
+    .trade-setup-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gold-light);
+      letter-spacing: 0.5px;
+    }
+
+    .setup-pill {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .setup-pill.buy { background: var(--buy-bg); color: var(--buy-green); border: 1px solid var(--buy-border); }
+    .setup-pill.sell { background: var(--sell-bg); color: var(--sell-red); border: 1px solid var(--sell-border); }
+    .setup-pill.transit { background: rgba(245, 158, 11, 0.15); color: var(--gold-light); border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    .setup-header-badge {
+      padding: 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.5px;
+      line-height: 1.4;
+    }
+
+    .setup-header-badge.long {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.1));
+      border: 1px solid var(--buy-green);
+      color: #34d399;
+    }
+
+    .setup-header-badge.short {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.1));
+      border: 1px solid var(--sell-red);
+      color: #f87171;
+    }
+
+    .setup-header-badge.neutral {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .setup-instruction {
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border-left: 3px solid var(--gold-primary);
+    }
+
+    .trade-levels-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .level-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .level-name {
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .level-val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .level-val.sl { color: var(--sell-red); }
+    .level-val.tp { color: var(--buy-green); }
+    .level-val.rr { color: var(--gold-light); font-weight: 800; }
+
+    /* Transit Progress Bar */
+    .transit-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .transit-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .transit-track {
+      height: 7px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .transit-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #f59e0b);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    /* REAL-TIME DELTA PRESSURE HUB */
+    .delta-pressure-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .pressure-verdict-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 7px 10px;
+      border-radius: 6px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .pressure-verdict-tag.buy {
+      background: rgba(16, 185, 129, 0.18);
+      color: var(--buy-green);
+      border: 1px solid var(--buy-border);
+    }
+
+    .pressure-verdict-tag.sell {
+      background: rgba(239, 68, 68, 0.18);
+      color: var(--sell-red);
+      border: 1px solid var(--sell-border);
+    }
+
+    .pressure-verdict-tag.neutral {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .pressure-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pressure-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .buyer-txt { color: var(--buy-green); }
+    .seller-txt { color: var(--sell-red); }
+
+    .tug-bar-track {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 5px;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .buyer-fill {
+      height: 100%;
+      background: var(--buy-green);
+      transition: width 0.2s ease;
+    }
+
+    .seller-fill {
+      height: 100%;
+      background: var(--sell-red);
+      transition: width 0.2s ease;
+    }
+
+    .delta-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-val {
+      font-family: var(--font-mono);
+      font-weight: 800;
+    }
+
+    .metric-val.positive { color: var(--buy-green); }
+    .metric-val.negative { color: var(--sell-red); }
+  </style>
+</head>
+<body>
+  <div class="terminal-layout">
+    
+    <!-- ====================================================================
+         TOP HEADER: PEPPERSTONE PAIR & LIVE QUOTES
+         ==================================================================== -->
+    <header class="terminal-header" role="banner">
+      <div class="brand-box">
+        <span class="pepperstone-badge">PEPPERSTONE</span>
+        <span class="pair-title">XAU/USD (GOLD SPOT)</span>
+
+        <div class="price-box">
+          <span class="current-price-val" id="currentPrice">----.--</span>
+          <span class="price-change positive" id="priceChange">+0.00 (+0.00%)</span>
+        </div>
+      </div>
+
+      <!-- Live Forex Bid / Ask / Spread / 24h Extremes -->
+      <div class="forex-quotes">
+        <div class="quote-chip">
+          <span class="quote-label">BID</span>
+          <span class="quote-val bid" id="bidPrice">----.--</span>
+        </div>
+        <div class="quote-chip">
+          <span class="quote-label">ASK</span>
+          <span class="quote-val ask" id="askPrice">----.--</span>
+        </div>
+        <div class="quote-chip">
+          <span class="quote-label">SPREAD</span>
+          <span class="quote-val" id="spreadPips">0.9 pips</span>
+        </div>
+        <div class="quote-chip">
+          <span class="quote-label">24H HIGH</span>
+          <span class="quote-val" id="high24h">----.--</span>
+        </div>
+        <div class="quote-chip">
+          <span class="quote-label">24H LOW</span>
+          <span class="quote-val" id="low24h">----.--</span>
+        </div>
+
+        <div class="feed-live-indicator" id="statusBadge">PEPPERSTONE:XAUUSD Live</div>
+        <a href="recap.html" style="background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; text-decoration: none; font-family: var(--font-mono); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);">⏱️ 21 SEPT RECAP SUB-TERMINAL</a>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         MAIN WORKSPACE GRID
+         ==================================================================== -->
+    <main class="main-workspace" role="main">
+      
+      <!-- LEFT / CENTER: UNIFIED TRADINGVIEW CHART WITH INTEGRATED ZONES -->
+      <section class="chart-section">
+        
+        <!-- Controls Bar -->
+        <div class="chart-controls-bar">
+          <div class="tf-selector">
+            <button class="tf-btn active" data-tf="1m">1M</button>
+            <button class="tf-btn" data-tf="5m">5M</button>
+            <button class="tf-btn" data-tf="15m">15M</button>
+            <button class="tf-btn" data-tf="1h">1H</button>
+          </div>
+
+          <div class="zone-status-banner">
+            <span class="tv-branding-tag">TRADINGVIEW ENGINE</span>
+            <span class="zone-pill demand">🟢 ZONE 1: <strong id="demandPill">--</strong></span>
+            <span class="zone-pill next-demand" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4; border: 1px dashed rgba(6, 182, 212, 0.5);">💎 ZONE 2 (NEXT): <strong id="nextDemandPill">--</strong></span>
+            <span class="zone-pill supply">🔴 ZONE 1: <strong id="supplyPill">--</strong></span>
+            <span class="zone-pill next-supply" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px dashed rgba(168, 85, 247, 0.5);">🚀 ZONE 2 (NEXT): <strong id="nextSupplyPill">--</strong></span>
+          </div>
+
+          <div>
+            <button id="btnResetView" class="btn-small">⟲ Center View</button>
+          </div>
+        </div>
+
+        <!-- Single Unified TradingView Chart Viewport with Zones -->
+        <div class="chart-viewport" id="chartViewport">
+          <div class="tv-main-chart-wrapper" id="mainChartCanvas">
+            <!-- Official TradingView Chart and Zones Canvas attach here -->
+          </div>
+
+          <!-- CVD Sub-Chart -->
+          <div class="cvd-subchart-container" id="cvdSubChartContainer">
+            <div class="cvd-label-overlay">
+              <span>CUMULATIVE VOLUME DELTA (CVD): </span>
+              <strong id="cvdLiveValue" style="color: #10b981;">+0.0 oz</strong>
+            </div>
+            <canvas id="cvdCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SIDEBAR: ZONE-TO-ZONE TRADE PLAN & REAL-TIME DELTA -->
+      <aside class="orderflow-sidebar">
+        
+        <!-- ZONE-TO-ZONE TRADE SETUP CARD -->
+        <div class="trade-setup-card">
+          <div class="card-title-row">
+            <span class="card-title">🎯 ZONE-TO-ZONE TRADE PLAN</span>
+            <span class="setup-pill" id="setupType">BUY</span>
+          </div>
+
+          <!-- Trade Setup Header Badge -->
+          <div class="setup-header-badge neutral" id="tradeSetupTitle">
+            WAITING FOR ZONE RETEST
+          </div>
+
+          <!-- Instructions -->
+          <div class="setup-instruction" id="tradeInstruction">
+            Monitoring Pepperstone gold price action. Enter at Buy Zone to target Opposite Sell Zone.
+          </div>
+
+          <!-- Key Trade Levels -->
+          <div class="trade-levels-grid">
+            <div class="level-row">
+              <span class="level-name">Entry Zone:</span>
+              <span class="level-val" id="setupEntry">$4334.37 - $4346.00</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Stop Loss (SL):</span>
+              <span class="level-val sl" id="setupSL">$4328.00 (-120 pips)</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Target (Opposite Zone):</span>
+              <span class="level-val tp" id="setupTP">$4395.00 (+550 pips)</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Next Target (Zone 2):</span>
+              <span class="level-val" id="setupNextTarget" style="color: #67e8f9; font-weight: 700;">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Risk / Reward (R:R):</span>
+              <span class="level-val rr" id="setupRR">1 : 4.6</span>
+            </div>
+          </div>
+
+          <!-- Transit Progress Bar -->
+          <div class="transit-wrapper">
+            <div class="transit-header">
+              <span>Transit Progress</span>
+              <span id="transitLabel">50% Toward Sell Zone</span>
+            </div>
+            <div class="transit-track">
+              <div class="transit-fill" id="transitProgressBar" style="width: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INSTITUTIONAL EVENT & ZONE 2 FLUSH PREDICTOR CARD -->
+        <div class="institutional-event-card">
+          <div class="card-title-row">
+            <span class="card-title">🏛️ INSTITUTIONAL EVENT PREDICTOR</span>
+            <span class="setup-pill" id="eventSessionBadge" style="background: rgba(6, 182, 212, 0.18); color: #67e8f9; font-size: 10px;">⚪ STANDARD AUCTION</span>
+          </div>
+
+          <!-- Probability Gauge Bar -->
+          <div class="flush-gauge-wrapper">
+            <div class="flush-gauge-labels">
+              <span>ZONE 1 HOLD</span>
+              <strong id="flushProbVal" style="color: #10b981;">20% FLUSH RISK</strong>
+              <span>ZONE 2 FLUSH</span>
+            </div>
+            <div class="flush-gauge-track">
+              <div class="flush-gauge-fill" id="flushGaugeFill" style="width: 20%; background: #10b981;"></div>
+            </div>
+          </div>
+
+          <!-- Action Verdict Box -->
+          <div class="event-verdict-box" id="eventVerdictBox">
+            <div class="event-verdict-title" id="eventVerdictTitle" style="color: #34d399;">🟢 MONITORING AUCTION</div>
+            <div class="event-verdict-desc" id="eventVerdictDesc">
+              Evaluating order flow and institutional benchmark clearing.
+            </div>
+          </div>
+
+          <!-- TARGET DESTINATION & TRADE DIRECTIVE PANEL -->
+          <div class="market-destination-box" id="marketDestinationBox">
+            <div class="dest-header">
+              <span class="dest-badge" id="destDirectionBadge">🎯 MARKET DESTINATION</span>
+              <span class="dest-price-tag" id="destPriceTag">--</span>
+            </div>
+            <div class="dest-title" id="destTitle">EVALUATING AUCTION DESTINATION...</div>
+            <div class="trade-choice-box" id="tradeChoiceBox">
+              <div class="choice-title" id="choiceTitle">--</div>
+              <div class="choice-desc" id="choiceDesc">--</div>
+            </div>
+          </div>
+
+          <!-- Benchmark Reference Prices -->
+          <div class="trade-levels-grid" style="margin-top: 4px;">
+            <div class="level-row">
+              <span class="level-name">🇨🇳 SGE Shanghai Benchmark:</span>
+              <span class="level-val" id="refShanghaiPrice" style="color: #fbbf24;">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">🇬🇧 LBMA PM Auction Anchor:</span>
+              <span class="level-val" id="refLbmaPrice" style="color: #67e8f9;">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- REAL-TIME DELTA PRESSURE HUB -->
+        <div class="delta-pressure-card">
+          <span class="card-title">⚡ REAL-TIME DELTA PRESSURE</span>
+          
+          <div class="pressure-verdict-tag neutral" id="pressureVerdict">
+            BALANCED AUCTION
+          </div>
+
+          <!-- Tug-of-War Bar -->
+          <div class="pressure-bar-container">
+            <div class="pressure-bar-labels">
+              <span class="buyer-txt">BUYERS <strong id="buyerPressurePct">50%</strong></span>
+              <span class="seller-txt"><strong id="sellerPressurePct">50%</strong> SELLERS</span>
+            </div>
+            <div class="tug-bar-track">
+              <div class="buyer-fill" id="buyerPressureBar" style="width: 50%;"></div>
+              <div class="seller-fill" id="sellerPressureBar" style="width: 50%;"></div>
+            </div>
+          </div>
+
+          <!-- Delta Net Stat -->
+          <div class="delta-stat-row">
+            <span style="color: var(--text-dim);">Rolling 30s Delta</span>
+            <span class="metric-val" id="rollingDeltaValue">+0.0 oz</span>
+          </div>
+        </div>
+
+      </aside>
+
+    </main>
+
+  </div>
+
+  <!-- Scripts: TradingView Engine Library (Local with CDN fallback) -->
+  <script src="js/lightweight-charts.js"></script>
+  <script>
+    if (typeof LightweightCharts === 'undefined') {
+      document.write('<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"><\/script>');
+    }
+  </script>
+
+  <!-- Sound Effects -->
+  <script src="js/soundEffects.js"></script>
+
+  <!-- Application Modules -->
+  <script src="js/deltaEngine.js"></script>
+  <script src="js/zoneEngine.js"></script>
+  <script src="js/chartCanvas.js"></script>
+  <script src="js/dataFeed.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>September 21, 2026 Recap & Backtest Sub-Terminal | PEPPERSTONE:XAUUSD</title>
+  <meta name="description" content="Dedicated historical replay and interactive backtesting sub-terminal for September 21, 2026 gold sessions.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/terminal.css">
+
+  <style>
+    /* Recap Sub-Terminal Specific Enhancements */
+    .recap-badge {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .replay-clock-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+
+    .replay-clock-pkt {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 800;
+      color: #67e8f9;
+    }
+
+    .replay-clock-utc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-return-live {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-return-live:hover {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: var(--gold-light);
+    }
+
+    /* Timeline Controller Bar */
+    .replay-controller-bar {
+      background: #090e17;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 40;
+    }
+
+    .session-presets {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-preset:hover {
+      background: rgba(6, 182, 212, 0.18);
+      border-color: #06b6d4;
+      color: #fff;
+    }
+
+    .btn-preset.highlight-1230 {
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .btn-preset.highlight-1230:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+    }
+
+    .btn-preset.highlight-1900 {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .btn-preset.highlight-1900:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+    }
+
+    .playback-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-playback {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-playback:hover {
+      background: var(--bg-hover);
+      border-color: var(--gold-light);
+    }
+
+    .btn-playback.play-btn {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+      color: #34d399;
+    }
+
+    .btn-playback.play-btn.playing {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #f87171;
+    }
+
+    .speed-btn-group {
+      display: flex;
+      gap: 3px;
+    }
+
+    .speed-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .speed-btn.active {
+      background: #06b6d4;
+      color: #000;
+      font-weight: 800;
+      border-color: #06b6d4;
+    }
+
+    .scrubber-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 380px;
+    }
+
+    .scrubber-slider {
+      flex: 1;
+      accent-color: #06b6d4;
+      height: 6px;
+      cursor: pointer;
+    }
+
+    /* Interactive Backtest Hub */
+    .sim-trade-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sim-buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-sim-trade {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .btn-sim-trade.buy-z1 {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+    }
+
+    .btn-sim-trade.buy-z1:hover {
+      background: #10b981;
+      color: #000;
+    }
+
+    .btn-sim-trade.buy-z2 {
+      background: rgba(6, 182, 212, 0.18);
+      border: 1px solid rgba(6, 182, 212, 0.45);
+      color: #67e8f9;
+      grid-column: span 2;
+    }
+
+    .btn-sim-trade.buy-z2:hover {
+      background: #06b6d4;
+      color: #000;
+    }
+
+    .btn-sim-trade.sell-z1 {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #f87171;
+    }
+
+    .btn-sim-trade.sell-z1:hover {
+      background: #ef4444;
+      color: #000;
+    }
+
+    .active-sim-trade-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sim-pnl-display {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .sim-pnl-display.positive { color: var(--buy-green); }
+    .sim-pnl-display.negative { color: var(--sell-red); }
+
+    .trade-history-list {
+      max-height: 140px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .trade-log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      border-left: 3px solid #64748b;
+    }
+
+    .trade-log-item.win { border-left-color: var(--buy-green); }
+    .trade-log-item.loss { border-left-color: var(--sell-red); }
+
+    /* Institutional Event & Zone 2 Flush Predictor */
+    .institutional-event-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .flush-gauge-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .flush-gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .flush-gauge-track {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .flush-gauge-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .event-verdict-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .event-verdict-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .event-verdict-desc {
+      font-size: 11px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal-layout">
+    
+    <!-- ====================================================================
+         TOP HEADER: RECAP SUB-TERMINAL
+         ==================================================================== -->
+    <header class="terminal-header" role="banner">
+      <div class="brand-box">
+        <span class="recap-badge">⏱️ RECAP SUB-TERMINAL</span>
+        <span class="pair-title">PEPPERSTONE:XAUUSD — 21 SEPT 2026</span>
+
+        <div class="price-box">
+          <span class="current-price-val" id="recapCurrentPrice">----.--</span>
+          <span class="price-change" id="recapPriceChange">+0.00 (+0.00%)</span>
+        </div>
+      </div>
+
+      <!-- Replay Clock showing exact simulated PKT & UTC times -->
+      <div class="replay-clock-box">
+        <div>
+          <span style="font-size: 9px; color: var(--text-dim); text-transform: uppercase; display: block;">Simulated Time</span>
+          <span class="replay-clock-pkt" id="clockPkt">12:30:00 PM PKT</span>
+        </div>
+        <div class="replay-clock-utc" id="clockUtc">(07:30:00 UTC)</div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="index.html" class="btn-return-live">⬅️ LIVE TERMINAL</a>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         INTERACTIVE TIMELINE CONTROLLER BAR
+         ==================================================================== -->
+    <div class="replay-controller-bar">
+      
+      <!-- Quick-Jump Session Presets -->
+      <div class="session-presets">
+        <span style="font-size: 10px; color: var(--text-dim); font-weight: 700; margin-right: 4px;">PRESETS:</span>
+        <button class="btn-preset highlight-1230" id="btnJump1230" title="Jump to 12:30 PM PKT London Pre-Market">⚡ 12:30 PM PKT (Zone 1 Buy)</button>
+        <button class="btn-preset highlight-1900" id="btnJump1900" title="Jump to 7:00 PM PKT NY Open Breakdown">⚡ 7:00 PM PKT (Zone 1 Breakdown)</button>
+        <button class="btn-preset" id="btnJump1904" title="Jump to 7:04 PM PKT Zone 2 Floor">⚡ 7:04 PM PKT (Zone 2 Floor Buy)</button>
+        <button class="btn-preset" id="btnJumpOpen" title="Jump to Day Start">⏮️ 09:00 PKT Open</button>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="playback-controls">
+        <button class="btn-playback" id="btnStepBack" title="Step Back 1 Bar">⏮ -1 Bar</button>
+        <button class="btn-playback play-btn" id="btnPlayPause">▶ Play</button>
+        <button class="btn-playback" id="btnStepFwd" title="Step Forward 1 Bar">⏭ +1 Bar</button>
+
+        <div class="speed-btn-group">
+          <button class="speed-btn active" data-speed="1">1x</button>
+          <button class="speed-btn" data-speed="5">5x</button>
+          <button class="speed-btn" data-speed="15">15x</button>
+          <button class="speed-btn" data-speed="60">60x</button>
+        </div>
+      </div>
+
+      <!-- Scrubber Slider -->
+      <div class="scrubber-container">
+        <span id="scrubberLabel" style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); min-width: 60px;">Bar 0/0</span>
+        <input type="range" class="scrubber-slider" id="timelineSlider" min="0" max="750" value="0">
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         MAIN WORKSPACE GRID
+         ==================================================================== -->
+    <main class="main-workspace" role="main">
+      
+      <!-- LEFT / CENTER: UNIFIED TRADINGVIEW CHART WITH MULTI-TIER ZONES -->
+      <section class="chart-section">
+        
+        <!-- Controls Bar -->
+        <div class="chart-controls-bar">
+          <div class="tf-selector">
+            <button class="tf-btn active" data-tf="1m">1M</button>
+            <button class="tf-btn" data-tf="5m">5M</button>
+            <button class="tf-btn" data-tf="15m">15M</button>
+          </div>
+
+          <div class="zone-status-banner">
+            <span class="zone-pill demand">🟢 ZONE 1: <strong id="recapDemand1Pill">--</strong></span>
+            <span class="zone-pill" style="background: rgba(6, 182, 212, 0.14); color: #06b6d4; border: 1px dashed rgba(6, 182, 212, 0.5);">💎 ZONE 2 (NEXT): <strong id="recapDemand2Pill">--</strong></span>
+            <span class="zone-pill supply">🔴 ZONE 1: <strong id="recapSupply1Pill">--</strong></span>
+            <span class="zone-pill" style="background: rgba(168, 85, 247, 0.14); color: #c084fc; border: 1px dashed rgba(168, 85, 247, 0.5);">🚀 ZONE 2 (NEXT): <strong id="recapSupply2Pill">--</strong></span>
+          </div>
+
+          <div>
+            <button id="btnRecapResetView" class="btn-small">⟲ Center Chart</button>
+          </div>
+        </div>
+
+        <!-- Single Unified TradingView Chart Viewport with Zones -->
+        <div class="chart-viewport" id="chartViewport">
+          <div class="tv-main-chart-wrapper" id="recapChartCanvas">
+            <!-- TradingView Chart and Zones Canvas attach here -->
+          </div>
+
+          <!-- CVD Sub-Chart -->
+          <div class="cvd-subchart-container" id="cvdSubChartContainer">
+            <div class="cvd-label-overlay">
+              <span>SIMULATED CUMULATIVE DELTA: </span>
+              <strong id="cvdLiveValue" style="color: #10b981;">+0.0 oz</strong>
+            </div>
+            <canvas id="recapCvdCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SIDEBAR: BACKTEST EXECUTION & TRADE SETUP CARD -->
+      <aside class="orderflow-sidebar">
+        
+        <!-- INTERACTIVE BACKTEST TRADE SIMULATOR -->
+        <div class="sim-trade-card">
+          <div class="card-title-row">
+            <span class="card-title">🧪 BACKTEST SIMULATOR</span>
+            <span class="setup-pill" id="simStatusPill" style="background: rgba(255,255,255,0.08);">NO ACTIVE TRADE</span>
+          </div>
+
+          <div class="sim-buttons-grid">
+            <button class="btn-sim-trade buy-z1" id="btnSimBuyZ1">
+              <span>🟢 BUY ZONE 1</span>
+              <small style="font-size: 9px; opacity: 0.8;">Primary Demand</small>
+            </button>
+            <button class="btn-sim-trade sell-z1" id="btnSimSellZ1">
+              <span>🔴 SELL ZONE 1</span>
+              <small style="font-size: 9px; opacity: 0.8;">Primary Supply</small>
+            </button>
+            <button class="btn-sim-trade buy-z2" id="btnSimBuyZ2">
+              <span>💎 BUY ZONE 2 DEEP FLOOR</span>
+              <small style="font-size: 9px; opacity: 0.8;">Reversal at $4,323 - $4,330</small>
+            </button>
+          </div>
+
+          <!-- Active Simulated Position Box -->
+          <div class="active-sim-trade-box" id="activeSimTradeBox" style="display: none;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+              <span id="simTradeType" style="font-weight: 800; color: #10b981;">BUY @ 4345.10</span>
+              <span id="simTradeZone" style="color: var(--text-muted);">Zone 1 Demand</span>
+            </div>
+            <div class="sim-pnl-display" id="simPnlDisplay">
+              <span id="simPnlVal">+0 pips</span>
+              <button id="btnManualExit" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-subtle); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Exit Trade</button>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">
+              <span>SL: <strong id="simSLVal">--</strong></span>
+              <span>TP: <strong id="simTPVal">--</strong></span>
+            </div>
+          </div>
+
+          <!-- Trade Log History -->
+          <div>
+            <span style="font-size: 10px; color: var(--text-dim); font-weight: 700; text-transform: uppercase;">Backtest Trade Results</span>
+            <div class="trade-history-list" id="tradeHistoryList">
+              <div style="color: var(--text-dim); text-align: center; padding: 10px 0;">No trades executed yet. Click a button above to test!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZONE-TO-ZONE TRADE SETUP CARD -->
+        <div class="trade-setup-card">
+          <div class="card-title-row">
+            <span class="card-title">🎯 ZONE-TO-ZONE TRADE PLAN</span>
+            <span class="setup-pill" id="setupType">BUY</span>
+          </div>
+
+          <!-- Trade Setup Header Badge -->
+          <div class="setup-header-badge neutral" id="tradeSetupTitle">
+            WAITING FOR ZONE RETEST
+          </div>
+
+          <!-- Instructions -->
+          <div class="setup-instruction" id="tradeInstruction">
+            Monitoring gold price action on 21 Sept 2026.
+          </div>
+
+          <!-- Key Trade Levels -->
+          <div class="trade-levels-grid">
+            <div class="level-row">
+              <span class="level-name">Entry Zone:</span>
+              <span class="level-val" id="setupEntry">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Stop Loss (SL):</span>
+              <span class="level-val sl" id="setupSL">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Target (TP):</span>
+              <span class="level-val tp" id="setupTP">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Next Target (Zone 2):</span>
+              <span class="level-val" id="setupNextTarget" style="color: #67e8f9; font-weight: 700;">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">Risk / Reward (R:R):</span>
+              <span class="level-val rr" id="setupRR">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INSTITUTIONAL EVENT & ZONE 2 FLUSH PREDICTOR CARD -->
+        <div class="institutional-event-card">
+          <div class="card-title-row">
+            <span class="card-title">🏛️ INSTITUTIONAL EVENT PREDICTOR</span>
+            <span class="setup-pill" id="eventSessionBadge" style="background: rgba(6, 182, 212, 0.18); color: #67e8f9; font-size: 10px;">⚪ STANDARD AUCTION</span>
+          </div>
+
+          <!-- Probability Gauge Bar -->
+          <div class="flush-gauge-wrapper">
+            <div class="flush-gauge-labels">
+              <span>ZONE 1 HOLD</span>
+              <strong id="flushProbVal" style="color: #10b981;">20% FLUSH RISK</strong>
+              <span>ZONE 2 FLUSH</span>
+            </div>
+            <div class="flush-gauge-track">
+              <div class="flush-gauge-fill" id="flushGaugeFill" style="width: 20%; background: #10b981;"></div>
+            </div>
+          </div>
+
+          <!-- Action Verdict Box -->
+          <div class="event-verdict-box" id="eventVerdictBox">
+            <div class="event-verdict-title" id="eventVerdictTitle" style="color: #34d399;">🟢 MONITORING AUCTION</div>
+            <div class="event-verdict-desc" id="eventVerdictDesc">
+              Evaluating order flow and institutional benchmark clearing.
+            </div>
+          </div>
+
+          <!-- TARGET DESTINATION & TRADE DIRECTIVE PANEL -->
+          <div class="market-destination-box" id="marketDestinationBox">
+            <div class="dest-header">
+              <span class="dest-badge" id="destDirectionBadge">🎯 MARKET DESTINATION</span>
+              <span class="dest-price-tag" id="destPriceTag">--</span>
+            </div>
+            <div class="dest-title" id="destTitle">EVALUATING AUCTION DESTINATION...</div>
+            <div class="trade-choice-box" id="tradeChoiceBox">
+              <div class="choice-title" id="choiceTitle">--</div>
+              <div class="choice-desc" id="choiceDesc">--</div>
+            </div>
+          </div>
+
+          <!-- Benchmark Reference Prices -->
+          <div class="trade-levels-grid" style="margin-top: 4px;">
+            <div class="level-row">
+              <span class="level-name">🇨🇳 SGE Shanghai Benchmark:</span>
+              <span class="level-val" id="refShanghaiPrice" style="color: #fbbf24;">--</span>
+            </div>
+            <div class="level-row">
+              <span class="level-name">🇬🇧 LBMA PM Auction Anchor:</span>
+              <span class="level-val" id="refLbmaPrice" style="color: #67e8f9;">--</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/lightweight-charts.js"></script>
+  <script src="js/sept21_data.js"></script>
+  <script src="js/zoneEngine.js"></script>
+  <script src="js/chartCanvas.js"></script>
+  <script src="js/recapEngine.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const zoneEngine = new ZoneEngine();
+      const chart = new ChartCanvas('recapChartCanvas', 'recapCvdCanvas');
+      const recapEngine = new RecapEngine();
+
+      // UI Elements
+      const elPrice = document.getElementById('recapCurrentPrice');
+      const elPriceChange = document.getElementById('recapPriceChange');
+      const elClockPkt = document.getElementById('clockPkt');
+      const elClockUtc = document.getElementById('clockUtc');
+      const elSlider = document.getElementById('timelineSlider');
+      const elScrubberLabel = document.getElementById('scrubberLabel');
+
+      const elBtnPlay = document.getElementById('btnPlayPause');
+      const elBtnStepBack = document.getElementById('btnStepBack');
+      const elBtnStepFwd = document.getElementById('btnStepFwd');
+
+      // Toolbar Pills
+      const elDemand1Pill = document.getElementById('recapDemand1Pill');
+      const elDemand2Pill = document.getElementById('recapDemand2Pill');
+      const elSupply1Pill = document.getElementById('recapSupply1Pill');
+      const elSupply2Pill = document.getElementById('recapSupply2Pill');
+
+      // Setup Card Elements
+      const elSetupTitle = document.getElementById('tradeSetupTitle');
+      const elSetupInstruction = document.getElementById('tradeInstruction');
+      const elSetupType = document.getElementById('setupType');
+      const elSetupEntry = document.getElementById('setupEntry');
+      const elSetupSL = document.getElementById('setupSL');
+      const elSetupTP = document.getElementById('setupTP');
+      const elSetupNext = document.getElementById('setupNextTarget');
+      const elSetupRR = document.getElementById('setupRR');
+
+      // Institutional Event Predictor Elements
+      const elEventBadge = document.getElementById('eventSessionBadge');
+      const elFlushProbVal = document.getElementById('flushProbVal');
+      const elFlushGaugeFill = document.getElementById('flushGaugeFill');
+      const elEventVerdictTitle = document.getElementById('eventVerdictTitle');
+      const elEventVerdictDesc = document.getElementById('eventVerdictDesc');
+      const elRefShanghai = document.getElementById('refShanghaiPrice');
+      const elRefLbma = document.getElementById('refLbmaPrice');
+
+      // Destination & Trade Directive Elements
+      const elDestPriceTag = document.getElementById('destPriceTag');
+      const elDestTitle = document.getElementById('destTitle');
+      const elTradeChoiceBox = document.getElementById('tradeChoiceBox');
+      const elChoiceTitle = document.getElementById('choiceTitle');
+      const elChoiceDesc = document.getElementById('choiceDesc');
+
+      // Sim Trade Elements
+      const elActiveTradeBox = document.getElementById('activeSimTradeBox');
+      const elSimTradeType = document.getElementById('simTradeType');
+      const elSimTradeZone = document.getElementById('simTradeZone');
+      const elSimPnlDisplay = document.getElementById('simPnlDisplay');
+      const elSimPnlVal = document.getElementById('simPnlVal');
+      const elSimSLVal = document.getElementById('simSLVal');
+      const elSimTPVal = document.getElementById('simTPVal');
+      const elSimStatusPill = document.getElementById('simStatusPill');
+      const elTradeHistoryList = document.getElementById('tradeHistoryList');
+
+      // Initialize Recap Engine
+      recapEngine.init(chart, zoneEngine, null, (state) => {
+        const c = state.candle;
+        if (!c) return;
+
+        // 1. Clock formatting (PKT is UTC+5)
+        const dateObj = new Date(c.time);
+        const utcHours = dateObj.getUTCHours();
+        const utcMinutes = dateObj.getUTCMinutes();
+        const utcSeconds = dateObj.getUTCSeconds();
+
+        const pktHours = (utcHours + 5) % 24;
+        const ampm = pktHours >= 12 ? 'PM' : 'AM';
+        const displayPktHours = pktHours % 12 || 12;
+        const pad = (n) => String(n).padStart(2, '0');
+
+        elClockPkt.textContent = `${displayPktHours}:${pad(utcMinutes)}:${pad(utcSeconds)} ${ampm} PKT`;
+        elClockUtc.textContent = `(${pad(utcHours)}:${pad(utcMinutes)}:${pad(utcSeconds)} UTC)`;
+
+        // 2. Price and Stats
+        elPrice.textContent = c.close.toFixed(2);
+        if (state.quote) {
+          const isPos = state.quote.change >= 0;
+          elPriceChange.className = `price-change ${isPos ? 'positive' : 'negative'}`;
+          elPriceChange.textContent = `${isPos ? '+' : ''}${state.quote.change.toFixed(2)} (${isPos ? '+' : ''}${state.quote.changePercent.toFixed(2)}%)`;
+        }
+
+        // 3. Slider & Playback
+        elSlider.max = state.totalCandles - 1;
+        elSlider.value = state.currentIndex;
+        elScrubberLabel.textContent = `Bar ${state.currentIndex + 1}/${state.totalCandles}`;
+
+        elBtnPlay.textContent = state.isPlaying ? '⏸ Pause' : '▶ Play';
+        elBtnPlay.className = state.isPlaying ? 'btn-playback play-btn playing' : 'btn-playback play-btn';
+
+        // 4. Zone Pills
+        if (state.demandZone) elDemand1Pill.textContent = `$${state.demandZone.low.toFixed(2)} - $${state.demandZone.high.toFixed(2)}`;
+        if (state.nextDemandZone) elDemand2Pill.textContent = `$${state.nextDemandZone.low.toFixed(2)} - $${state.nextDemandZone.high.toFixed(2)}`;
+        if (state.supplyZone) elSupply1Pill.textContent = `$${state.supplyZone.low.toFixed(2)} - $${state.supplyZone.high.toFixed(2)}`;
+        if (state.nextSupplyZone) elSupply2Pill.textContent = `$${state.nextSupplyZone.low.toFixed(2)} - $${state.nextSupplyZone.high.toFixed(2)}`;
+
+        // 5. Setup Card
+        if (state.setup && state.setup.activeTrade) {
+          const t = state.setup.activeTrade;
+          elSetupTitle.textContent = t.title;
+          elSetupTitle.className = `setup-header-badge ${state.setup.statusColor}`;
+          elSetupInstruction.textContent = t.instruction;
+          elSetupType.textContent = t.type;
+          elSetupType.className = `setup-pill ${t.type.toLowerCase().replace(/_/g, '-')}`;
+          elSetupEntry.textContent = t.entryZone;
+          elSetupSL.textContent = t.stopLoss;
+          elSetupTP.textContent = t.targetOpposite;
+          elSetupNext.textContent = t.nextTargetIfBroken || '--';
+          elSetupRR.textContent = t.riskReward;
+        }
+
+        // 5b. Institutional Event & Zone 2 Flush Predictor
+        if (state.institutionalEvent) {
+          const ev = state.institutionalEvent;
+          elEventBadge.textContent = ev.eventSession;
+          elFlushProbVal.textContent = `${ev.flushProbability}% FLUSH RISK`;
+          elFlushGaugeFill.style.width = `${ev.flushProbability}%`;
+          
+          if (ev.flushProbability >= 70) {
+            elFlushGaugeFill.style.background = '#ef4444';
+            elFlushProbVal.style.color = '#f87171';
+            elEventVerdictTitle.style.color = '#f87171';
+          } else if (ev.flushProbability <= 35) {
+            elFlushGaugeFill.style.background = '#10b981';
+            elFlushProbVal.style.color = '#34d399';
+            elEventVerdictTitle.style.color = '#34d399';
+          } else {
+            elFlushGaugeFill.style.background = '#f59e0b';
+            elFlushProbVal.style.color = '#fbbf24';
+            elEventVerdictTitle.style.color = '#fbbf24';
+          }
+
+          elEventVerdictTitle.textContent = ev.verdictTag;
+          elEventVerdictDesc.textContent = ev.verdictDesc;
+          if (elRefShanghai && ev.shanghaiRefPrice) elRefShanghai.textContent = `$${ev.shanghaiRefPrice.toFixed(2)}`;
+          if (elRefLbma && ev.lbmaRefPrice) elRefLbma.textContent = `$${ev.lbmaRefPrice.toFixed(2)}`;
+
+          // Destination & Trade Choice Directive
+          if (ev.destination) {
+            const dest = ev.destination;
+            if (elDestPriceTag) {
+              elDestPriceTag.textContent = `${dest.direction === 'UP' ? '▲' : '▼'} ${dest.pipsDistance} PIPS`;
+              elDestPriceTag.style.color = dest.direction === 'UP' ? '#34d399' : '#f87171';
+              elDestPriceTag.style.borderColor = dest.direction === 'UP' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+            }
+            if (elDestTitle) elDestTitle.textContent = dest.whereMarketWillGo;
+            if (elChoiceTitle) {
+              elChoiceTitle.textContent = dest.tradeDirectiveTitle;
+              elChoiceTitle.style.color = dest.directiveClass === 'trade-zone1' ? '#34d399' : (dest.directiveClass === 'wait-zone2' ? '#f87171' : '#fbbf24');
+            }
+            if (elChoiceDesc) elChoiceDesc.textContent = dest.tradeDirectiveDesc;
+            if (elTradeChoiceBox) elTradeChoiceBox.className = `trade-choice-box ${dest.directiveClass || 'neutral'}`;
+          }
+        }
+
+        // 6. Simulated Trade Card
+        if (state.activeSimTrade) {
+          const st = state.activeSimTrade;
+          elActiveTradeBox.style.display = 'flex';
+          elSimTradeType.textContent = `${st.type} @ ${st.entryPrice.toFixed(2)}`;
+          elSimTradeType.style.color = st.type === 'BUY' ? '#10b981' : '#ef4444';
+          elSimTradeZone.textContent = st.zoneName;
+          elSimSLVal.textContent = `$${st.sl.toFixed(2)}`;
+          elSimTPVal.textContent = `$${st.tp.toFixed(2)}`;
+
+          const isWin = st.pnlPips >= 0;
+          elSimPnlVal.textContent = `${isWin ? '+' : ''}${st.pnlPips} pips ($${(st.pnlPips * 1.0).toFixed(1)})`;
+          elSimPnlDisplay.className = `sim-pnl-display ${isWin ? 'positive' : 'negative'}`;
+          elSimStatusPill.textContent = 'TRADE OPEN';
+          elSimStatusPill.style.background = isWin ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+        } else {
+          elActiveTradeBox.style.display = 'none';
+          elSimStatusPill.textContent = 'NO ACTIVE TRADE';
+          elSimStatusPill.style.background = 'rgba(255, 255, 255, 0.08)';
+        }
+
+        // 7. Trade History List
+        if (state.tradeHistory && state.tradeHistory.length > 0) {
+          elTradeHistoryList.innerHTML = state.tradeHistory.map(th => {
+            const isWin = th.pnlPips >= 0;
+            return `<div class="trade-log-item ${isWin ? 'win' : 'loss'}">
+              <span>${th.type} (${th.reason})</span>
+              <strong style="color: ${isWin ? '#34d399' : '#f87171'};">${isWin ? '+' : ''}${th.pnlPips} pips</strong>
+            </div>`;
+          }).join('');
+        }
+      });
+
+      // Controls Events
+      elSlider.addEventListener('input', (e) => recapEngine.scrubToIndex(parseInt(e.target.value)));
+      elBtnPlay.addEventListener('click', () => {
+        if (recapEngine.isPlaying) recapEngine.pause();
+        else recapEngine.play();
+      });
+      elBtnStepBack.addEventListener('click', () => recapEngine.step(-1));
+      elBtnStepFwd.addEventListener('click', () => recapEngine.step(1));
+
+      // Speed Buttons
+      document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          recapEngine.setSpeed(parseInt(btn.getAttribute('data-speed')));
+        });
+      });
+
+      // Quick Jump Presets
+      document.getElementById('btnJump1230').addEventListener('click', () => recapEngine.jumpToTime('12:30'));
+      document.getElementById('btnJump1900').addEventListener('click', () => recapEngine.jumpToTime('19:00'));
+      document.getElementById('btnJump1904').addEventListener('click', () => recapEngine.jumpToTime('19:04'));
+      document.getElementById('btnJumpOpen').addEventListener('click', () => recapEngine.jumpToTime('open'));
+
+      // Timeframe Buttons
+      document.querySelectorAll('.tf-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          recapEngine.loadTimeframe(btn.getAttribute('data-tf'));
+        });
+      });
+
+      // Sim Trade Buttons
+      document.getElementById('btnSimBuyZ1').addEventListener('click', () => recapEngine.executeSimulatedTrade('BUY_ZONE_1'));
+      document.getElementById('btnSimBuyZ2').addEventListener('click', () => recapEngine.executeSimulatedTrade('BUY_ZONE_2'));
+      document.getElementById('btnSimSellZ1').addEventListener('click', () => recapEngine.executeSimulatedTrade('SELL_ZONE_1'));
+      document.getElementById('btnManualExit').addEventListener('click', () => recapEngine.closeSimulatedTrade('MANUAL_EXIT'));
+      document.getElementById('btnRecapResetView').addEventListener('click', () => chart.resetView());
+    });
+  </script>
+</body>
+</html>
